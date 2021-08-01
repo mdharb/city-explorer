@@ -1,32 +1,51 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 
-import Form from 'react-bootstrap/Form'
-import Button from 'react-bootstrap/Button'
+import axios from 'axios';
+
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 
 export class LocationForm extends Component {
 
-    submittedCity = (event) => {
-        
-        event.preventDefault();
-        let city = event.target.cityName.value
-        console.log(city);
+  constructor(props){
+    super(props);
+    this.state = {
+      cityData: {},
+      longitude: null,
+      latitude: null
+    };
+  }
+
+    gettingCity = async (event) => {
+
+      event.preventDefault();
+      let city = event.target.cityName.value;
+      let response = await axios.get(`https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_IQ_TOKEN}=${city}&format=json`);
+      console.log(response.cityData[0].display_name);
+      console.log(city);
+
+      this.setState({
+        cityData: response.cityData[0].display_name,
+        longitude: response.cityData[0].lon,
+        latitude: response.cityData[0].lat
+      });
     }
 
     render() {
-        return (
-            <div>
-                <Form onSubmit = {this.submittedCity}>
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>City</Form.Label>
-                        <Form.Control  name='cityName' type="text" placeholder="Name of city" />
-                    </Form.Group>
-                    <Button variant="primary" type="submit">
-                        Explore
-                    </Button>
-                </Form>
-            </div>
-        )
+      return (
+          <div>
+          <Form onSubmit = {this.gettingCity}>
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Label>City</Form.Label>
+              <Form.Control name='cityName' type="text" placeholder="City name" />
+            </Form.Group>
+            <Button variant="primary" type="submit">
+                Explore
+            </Button>
+          </Form>
+          </div>
+      );
     }
 }
 
-export default LocationForm
+export default LocationForm;

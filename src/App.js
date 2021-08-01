@@ -14,10 +14,10 @@ export class App extends Component {
       <div>
         <Header />
         <Main />
-        <Footer/>
+        <Footer />
       </div>
-    )
+    );
   }
 }
 
-export default App
+export default App;
