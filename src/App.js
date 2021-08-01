@@ -1,13 +1,21 @@
 import React, { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import axios from 'axios';
 
-import LocationForm from './components/LocationForm';
+import Header from './components/Header';
+import Main from './components/Main';
+import Footer from './components/Footer';
+
+
+
 
 export class App extends Component {
   render() {
     return (
       <div>
-        <LocationForm />
+        <Header />
+        <Main />
+        <Footer/>
       </div>
     )
   }
