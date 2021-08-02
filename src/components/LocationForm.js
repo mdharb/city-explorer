@@ -23,18 +23,21 @@ export class LocationForm extends Component {
 
     event.preventDefault();
     let city = event.target.cityName.value;
+console.log(event.target.cityName.value)
+    let url = (`https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_IQ_TOKEN}&q=${city}&format=json`);
 
     try {
-      let response = await axios.get(`https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_IQ_TOKEN}=${city}&format=json`);
+
+      let response = await axios.get(url);
 
       this.setState({
-        chosenCity: response.cityData[0].display_name,
-        lon: response.cityData[0].lon,
-        lat: response.cityData[0].lat,
+        chosenCity: response.data[0].display_name,
+        lon: response.data[0].lon,
+        lat: response.data[0].lat,
         showLocation: true
       });
 
-    } catch {
+    } catch (e) {
       this.setState({
         showLocation: false,
         errorDisplay: true
@@ -44,8 +47,7 @@ export class LocationForm extends Component {
 
   render() {
     return (
-      <div>
-      <div>
+      <>
         <Form onSubmit={this.gettingCity}>
           <Form.Group className="mb-3" controlId="formBasicEmail">
             <Form.Label>City</Form.Label>
@@ -55,20 +57,22 @@ export class LocationForm extends Component {
             Explore
           </Button>
         </Form>
-        <p>{this.state.chosenCity}</p>
-        </div>
+        <p className="name">{this.state.chosenCity}</p>
+        <p className="name">{this.state.lat}</p>
+        <p className="name">{this.state.lon}</p>
 
-        <div>
+
+
         {
           this.state.showLocation &&
           <img src={`https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_IQ_TOKEN}&center=${this.state.lat},${this.state.lon}`} alt='map' />
         }
-        </div>
+
         {
-          this.state.errorDisplay && 
+          this.state.errorDisplay &&
           <p>{this.state.errorMessage}</p>
-          }
-        </div>
+        }
+      </>
     );
   }
 }
