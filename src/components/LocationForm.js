@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import axios from 'axios';
+import Weather from './Weather';
 
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -23,7 +24,6 @@ export class LocationForm extends Component {
 
     event.preventDefault();
     let city = event.target.cityName.value;
-console.log(event.target.cityName.value)
     let url = (`https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_IQ_TOKEN}&q=${city}&format=json`);
 
     try {
@@ -35,6 +35,13 @@ console.log(event.target.cityName.value)
         lon: response.data[0].lon,
         lat: response.data[0].lat,
         showLocation: true
+      });
+
+      let weatherData = await axios.get(`http://localhost:4000/weather?lat=${this.state.lat}&lon=${this.state.lon}&searchQuery=${this.state.display_name.split(',')[0]}`)
+
+      console.log(weatherData);
+      this.setState({
+        weather: weatherData.data
       });
 
     } catch (e) {
@@ -72,6 +79,8 @@ console.log(event.target.cityName.value)
           this.state.errorDisplay &&
           <p>{this.state.errorMessage}</p>
         }
+
+        {this.state.weather}
       </>
     );
   }
