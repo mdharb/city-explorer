@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 
 import axios from 'axios';
-import Weather from './Weather';
 
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -14,6 +13,7 @@ export class LocationForm extends Component {
       chosenCity: '',
       lon: '',
       lat: '',
+      weatherData: [],
       showLocation: false,
       errorDisplay: false,
       errorMessage: 'Select existed city!'
@@ -27,21 +27,18 @@ export class LocationForm extends Component {
     let url = (`https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_IQ_TOKEN}&q=${city}&format=json`);
 
     try {
-
       let response = await axios.get(url);
+      let locationIqData = response.data[0];
+      let splittedCityName = locationIqData.display_name.split(',')[0];
+      let weatherForecast = await axios.get(`${process.env.REACT_APP_LOCATION_SERVER_URL}/weather?searchQuery=${splittedCityName}&lat=${locationIqData.lat}&lon=${locationIqData.lon}`);
+
 
       this.setState({
         chosenCity: response.data[0].display_name,
         lon: response.data[0].lon,
         lat: response.data[0].lat,
-        showLocation: true
-      });
-
-      let weatherData = await axios.get(`http://localhost:4000/weather?lat=${this.state.lat}&lon=${this.state.lon}&searchQuery=${this.state.display_name.split(',')[0]}`)
-
-      console.log(weatherData);
-      this.setState({
-        weather: weatherData.data
+        showLocation: true,
+        weatherData: weatherForecast.data
       });
 
     } catch (e) {
@@ -64,11 +61,11 @@ export class LocationForm extends Component {
             Explore
           </Button>
         </Form>
+
+
         <p className="name">{this.state.chosenCity}</p>
         <p className="name">{this.state.lat}</p>
         <p className="name">{this.state.lon}</p>
-
-
 
         {
           this.state.showLocation &&
@@ -76,11 +73,22 @@ export class LocationForm extends Component {
         }
 
         {
+          this.state.weatherData.map(weather => {
+            return (
+              <ul>
+                <li>{weather.valid_date}</li>
+                <li>{weather.description}</li>
+                </ul>
+            )
+          })
+        }
+
+        {
           this.state.errorDisplay &&
           <p>{this.state.errorMessage}</p>
         }
 
-        {this.state.weather}
+
       </>
     );
   }
