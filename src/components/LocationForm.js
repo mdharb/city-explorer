@@ -2,6 +2,13 @@ import React, { Component } from 'react';
 
 import axios from 'axios';
 
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+import Map from './Map';
+import Weather from './Weather';
+import Movies from './Movies';
+
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
@@ -10,41 +17,53 @@ export class LocationForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      chosenCity: '',
+      searchQuery: '',
       lon: '',
       lat: '',
       weatherData: [],
+      moviesData: [],
       showLocation: false,
       errorDisplay: false,
-      errorMessage: 'Select existed city!'
+      errorMessage: 'Select existed city!',
+      showCard: false
     };
   }
 
   gettingCity = async (event) => {
-
     event.preventDefault();
-    let city = event.target.cityName.value;
-    let url = (`https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_IQ_TOKEN}&q=${city}&format=json`);
+
+    let searchQuery = event.target.cityName.value;
+    let url = (`https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_IQ_TOKEN}&q=${searchQuery}&format=json`);
 
     try {
-      let response = await axios.get(url);
-      let locationIqData = response.data[0];
-      let splittedCityName = locationIqData.display_name.split(',')[0];
-      let weatherForecast = await axios.get(`${process.env.REACT_APP_LOCATION_SERVER_URL}/weather?searchQuery=${splittedCityName}&lat=${locationIqData.lat}&lon=${locationIqData.lon}`);
-
+      let responseLocation = await axios.get(url);
 
       this.setState({
-        chosenCity: response.data[0].display_name,
-        lon: response.data[0].lon,
-        lat: response.data[0].lat,
+        chosenCity: responseLocation.data[0].display_name,
+        lon: responseLocation.data[0].lon,
+        lat: responseLocation.data[0].lat,
         showLocation: true,
-        weatherData: weatherForecast.data
+        showCard: true,
+        errorDisplay: false
+      });
+
+      const urlServer = `${process.env.REACT_APP_LOCATION_SERVER_URL}/weather?lat=${this.state.lat}&lon=${this.state.lon}&searchQuery=${searchQuery}`
+      let weatherResult = await axios.get(urlServer)
+      this.setState({
+        weatherData: weatherResult.data
+      });
+
+      const urlMovies = `${process.env.REACT_APP_LOCATION_SERVER_URL}/movies?searchQuery=${searchQuery}`
+      let moviesResult = await axios.get(urlMovies)
+      this.setState({
+        moviesData: moviesResult.data
       });
 
     } catch (e) {
       this.setState({
         showLocation: false,
-        errorDisplay: true
+        errorDisplay: true,
+        showCard: true
       });
     }
   }
@@ -62,32 +81,19 @@ export class LocationForm extends Component {
           </Button>
         </Form>
 
+        <Map
+          chosenCity={this.state.displayName}
+          lon={this.state.lon}
+          lat={this.state.lat}
+          showLocation={this.state.showLocation}
+          errorDisplay={this.state.errorDisplay}
+          errorMessage={this.state.errorMessage}
+          showCard={this.state.showCard}
 
-        <p className="name">{this.state.chosenCity}</p>
-        <p className="name">{this.state.lat}</p>
-        <p className="name">{this.state.lon}</p>
+        />
+        <Weather showCard={this.state.showCard} weatherData={this.state.weatherData}></Weather>
 
-        {
-          this.state.showLocation &&
-          <img src={`https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_IQ_TOKEN}&center=${this.state.lat},${this.state.lon}`} alt='map' />
-        }
-
-        {
-          this.state.weatherData.map(weather => {
-            return (
-              <ul>
-                <li>{weather.valid_date}</li>
-                <li>{weather.description}</li>
-                </ul>
-            )
-          })
-        }
-
-        {
-          this.state.errorDisplay &&
-          <p>{this.state.errorMessage}</p>
-        }
-
+        <Movies showCard={this.state.showCard} moviesData={this.state.moviesData}></Movies>
 
       </>
     );
