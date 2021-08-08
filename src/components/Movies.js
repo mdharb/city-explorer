@@ -26,9 +26,7 @@ class Movies extends React.Component {
                             </Card.Header>
 
                             <Card.Text>
-
                             {element.overview}
-
                             </Card.Text>
 
                         </Card>
