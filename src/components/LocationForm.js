@@ -39,7 +39,7 @@ export class LocationForm extends Component {
       let responseLocation = await axios.get(url);
 
       this.setState({
-        chosenCity: responseLocation.data[0].display_name,
+        searchQuery: responseLocation.data[0].display_name,
         lon: responseLocation.data[0].lon,
         lat: responseLocation.data[0].lat,
         showLocation: true,
